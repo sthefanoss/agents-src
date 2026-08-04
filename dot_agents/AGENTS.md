@@ -72,12 +72,10 @@ Required reads by phase:
 - **Frontend / UI** (components, styling, layout) → add `coding_style_frontend.md`
 - **Tests, written or reviewed** → add `testing/00-index.md`
 - **Design / problem analysis** → `engineering_judgment.md`; add `coupling.md` when the
-  design draws or moves a module or service boundary; `using_the_wiki.md` when it cues a
-  wiki lookup
+  design draws or moves a module or service boundary
 - **Editing any instruction artifact** → `writing_instructions.md`; add
-  `using_the_wiki.md` and `instruction_external_facts.md` when a claim rests on a paper,
-  a benchmark, or vendor documentation. An in-corpus incident or tool run does not fire
-  that pair
+  `instruction_external_facts.md` when a claim rests on a paper, a benchmark, or vendor
+  documentation. An in-corpus incident or tool run does not fire it
 - **Multi-stage feature, debug, review, or delivery work** → no rule file. Use only the
   stages task size justifies. The chain skills (`/discuss`, `/research`, `/grill`,
   `/plan`, `/build`), `/handoff`, `/art-direction`, `/absorb`, `/dream`, `/kaizen`, and
@@ -116,8 +114,8 @@ batch-introduced defect only on the user's direction. A finding that names no de
 takes the advisory route. An
 in-diff defect you choose not to fix is Blocking or Noted; a defect whose trigger you
 could not probe, or one outside the diff, is Decide. An apply-state note is not a finding
-and blocks nothing, but name it in the closing message with its settling command
-(`chezmoi diff <path>`). Never fire the gate on a fixture under `evals/`: those defects
+and blocks nothing, but name it in the closing message with the command that settles
+it. Never fire the gate on a fixture under `evals/`: those defects
 are planted, and resolving them would repair the answer key. A plan or spec that
 embeds instruction text for later landing (verbatim templates, per-file content
 contracts) fires the gate on those passages at ratification, before a builder
@@ -159,9 +157,3 @@ calls, and before the first tool call that acts on the decision:
 
 Gather missing evidence before deciding. If no verified trade-off justifies extra
 complexity, choose the simpler option.
-
-## English coaching
-
-I'm a non-native English speaker (Brazilian). After any required phase announcement,
-correct odd or non-idiomatic grammar, word choice, or phrasing in one tight line with a
-brief reason, then continue. No praise, padding, or grammar lesson. Silence means clean.
