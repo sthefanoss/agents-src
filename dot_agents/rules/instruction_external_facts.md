@@ -132,6 +132,18 @@ is a git probe with its own trigger. **Re-verify on any backlog.md upgrade.**
   probing the child path `backlog/config.yml` exits 0 *(probe, git 2.55.0;
   re-verify on a git upgrade)*.
 
+## subosito/flutter-action
+
+Read from the action's GitHub README this session; not exercised in a workflow run.
+**Re-verify on any major-version bump of the action.** Cited by `fvm-setup` step 7.
+
+- `flutter-version-file:` reads the Flutter version from a file. Accepted files:
+  `pubspec.yaml`, `.fvmrc`, `.fvm/fvm_config.json`.
+- The file must define an exact version, not a range or channel.
+- `channel:` may be set alongside `flutter-version-file:` (the README's `.fvmrc`
+  example carries `channel: stable`).
+- Checked against `@v2`.
+
 ## Deprecated model mechanics
 
 **Re-verify on each model release**, against the extended-thinking reference and the
