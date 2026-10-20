@@ -1,7 +1,6 @@
 ---
 name: sync-upstream
-description: Fetches upstream/main in ~/.agents-src, reports the incoming commits, changed paths under dot_agents/, and any overlap with local adaptations, and merges on approval while refreshing the ~/.agents, ~/.claude, and ~/.gemini/config symlinks. Judging an outside instruction source item by item belongs to absorb. Runs only when typed.
-disable-model-invocation: true
+description: Fetches upstream/main in ~/.agents-src, reports the incoming commits, changed paths under dot_agents/, and any overlap with local adaptations, and merges on approval while refreshing the ~/.agents, ~/.claude, and ~/.gemini/config symlinks. Use on a direction to sync ~/.agents-src with upstream, including "atualize o cérebro do joão". Judging an outside instruction source item by item belongs to absorb.
 ---
 
 # Sync upstream
