@@ -12,8 +12,10 @@ bindkey '^x^e' edit-command-line
 
 zmodload zsh/complist
 autoload -Uz compinit && compinit -C
+unsetopt list_ambiguous
+setopt menu_complete
 zstyle ':completion:*' menu select
-zstyle ':completion:*' matcher-list 'm:{[:lower:][:upper:]}={[:upper:][:lower:]} l:|=* r:|=*'
+zstyle ':completion:*' matcher-list 'm:{[:lower:][:upper:]}={[:upper:][:lower:]}' 'l:|=* r:|=*'
 
 [ -f $HOME/.env ] && source $HOME/.env
 [ -f $HOME/.aliases ] && source $HOME/.aliases
@@ -27,7 +29,7 @@ if [[
 	-z "$TMUX" &&
 	-z "$CLAUDE_AGENT_SDK_VERSION" &&
 	-z "$INSIDE_EMACS" &&
-	"$TERM_PROGRAM" != "vscode" &&
-	"$TERM_PROGRAM" != "zed" ]]; then
+	"$TERM_PROGRAM" != "zed" &&
+	"$TERM_PROGRAM" != "Apple_Terminal" ]]; then
 	tat
 fi

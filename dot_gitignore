@@ -1,5 +1,4 @@
 .DS_Store
-
-# Agent workflow artifacts — personal, never committed to any repo
-backlog/
+mise.local.toml
+/backlog
 .boris/

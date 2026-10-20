@@ -21,5 +21,7 @@
     "losslesscut"
     "openemu"
     "pop-app"
+    "transmission"
+    "utm"
   ];
 }

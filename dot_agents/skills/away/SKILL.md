@@ -1,0 +1,70 @@
+---
+name: away
+description: Continues the work already in flight with nobody at the keyboard, replacing the questions that would have stopped you with an independent review and a decision log, until the work is done, every remaining line needs an answer, or the context runs short. Use when the session is told to keep going unattended. Packaging work for a fresh session with someone at the keyboard is relay, which this skill also runs on its way out.
+disable-model-invocation: true
+---
+
+# Away
+
+Continue the work this session already named, without stopping to ask. Where nothing
+is in flight, say so and stop. This skill continues work and never invents it.
+
+An argument on the invocation is the typed instruction for the away period, so follow
+its priorities, its limits, and any authorization it grants. A grant reaches only the
+actions it names, so "do whatever you need" grants nothing. The period ends at the next
+message, and the grants end with it. From there the standing ask rules apply again, so
+re-ask for anything still queued.
+
+## What changes, and what does not
+
+This changes when you stop to ask, and nothing else. Every standing bar holds exactly
+as before, the hard lines and the rules on acting alike, and an authorization already
+in force stays in force. Where the next step needs an action the hard lines reserve for
+an explicit direction, write the exact command into the log and carry on with work that
+does not need it.
+
+## When to stop
+
+Stop when the work is done, meaning every line of it is complete and confirmed the way
+that work admits. Where something runs, you have watched it behave, and a green suite
+alone is never the evidence. Where nothing runs, you have taken the artifact's own
+confirming step: the command, the rendered page, the staged diff read back.
+
+Stop when every line needs an answer from outside the session: a decision that
+crosses into real money, irreversibility, an outward-facing surface, or scope growth;
+an ask already queued; or a ratification or an observation this session cannot make.
+Never supply that answer yourself. One blocked line parks in the log with the exact
+question. Where a line is left unparked, keep going.
+
+Stop when the context left will not carry the work to either of those ends. Run relay
+while there is room to write the snapshot, because a session that runs out mid-work
+leaves the card holding nothing and the next one starts from the beginning.
+
+Everything else is yours to settle. A failing test, a flaky tool, a choice between two
+workable approaches: probe it, decide it, log it, keep going.
+
+## A reviewer instead of a question
+
+Where you would have stopped to ask whether something is right, run the adversarial-
+review skill on the work. Its verdict is evidence and not instruction. Fix the defects
+it names inside the scope you already have, relay anything else its report tells you
+to do as a finding, and log every finding you do not fix with its disposition. A
+reviewer's confidence never unlocks a queued ask, and never a hard line.
+
+## The log
+
+Write the log as you go, one entry at a time, never reconstructed at the end. It is a
+document on the card, by the board rules' route, so it survives the session that wrote
+it. Outside a git repository it goes to `$TMPDIR/away-<YYYY-MM-DD>-<slug>.md`. Each
+entry is a line: a decision that would otherwise have been asked about, with the
+reason and how to undo it;
+a review, with its verdict and what changed because of it; a queued ask, with the exact
+command ready to run; a parked line, with the one thing that unblocks it.
+
+## The return report
+
+Order it by rising urgency, since the report is read from the bottom up: the log's
+path first, then suggestions you did not act on, then the queued asks and parked
+questions, each one a short reply away from moving. The last line is the verdict, done,
+blocked, or relayed where the context ran short, and where nothing is blocking and
+nothing waits on a decision it says both plainly.

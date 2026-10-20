@@ -1,51 +1,57 @@
 ---
 name: diagnose
-description: >
-  Write a read-only diagnosis report, root cause, rules broken, five-whys, to a
-  durable file once this session's investigation has concluded (cause confirmed, or
-  leads exhausted and best hypothesis recorded). Invoke on "diagnose this",
-  "root-cause report", "document what went wrong". Proposes NO fixes; that's /plan,
-  run later off the report. Fix approach already settled → /plan; cause still under
-  investigation → /debug; pausing that investigation → /handoff (user-invoked).
+description: Writes the durable diagnosis document for a defect whose investigation has ended, for a reader with no memory of the session. It proposes no fix. Use when a cause needs to survive the session as a document others will read. A cause still being chased belongs to debug.
 ---
 
 # Diagnose
 
-**Diagnose, don't prescribe.** Describe the problem and its cause: including
-what's absent or what was already tried. Never propose or rate a fix; that's the
-next session's job. A precise cause naturally narrows the fix space; that's the
-value, not license to choose the fix.
+The reader has no memory of this session, so the document alone has to carry the
+defect. Debug records its result on the card as it goes. This skill runs where the card is not
+enough: a cause someone outside this board will read, a defect handed to another
+team, or an investigation whose evidence a later session would otherwise have to
+gather again. A confirmed cause needs no document just for being confirmed.
 
-- Allowed: "config loads before `doom env` regenerates `env.el`, so the gpg path is empty."
-- Forbidden: "...so lazy-load the config."
+## Describe the cause, not the remedy
 
-**Ground every claim.** Re-check each cited `file:line` against the actual code
-before writing it; don't trust session memory; a confident wrong cause misleads
-`/plan`. If the root cause wasn't established, say so and give the leading
-hypothesis plus what would confirm it. Tag each finding `confirmed` or `hypothesis`.
+Say what is broken and why, including what is absent and what was already tried.
+Naming the fix is the next session's work, and a precise cause narrows the fix space
+by itself, which is not permission to pick the fix. Never propose a fix, and never
+rate one against another.
 
-**Write it cold-readable.** The next session has zero memory of this one; the
-file alone must suffice. Inline the evidence; no "as we discussed."
+This skill only reads the code it diagnoses. Repairing what you were sent to explain
+leaves the next reader a cause that no longer matches the code.
 
-Read `~/.agents/rules/backlog_board.md` before any board read or write. Write the report
-as a doc titled "<subject> diagnosis" and attach it with `--doc` to the bug's card; given
-no card, create one (`--type bug -s Research`).
+Write "the configuration loads before the environment file is regenerated, so the path
+is empty." Do not write "so load the configuration lazily."
 
-## Structure
+## Ground every claim
 
-1. **Summary**: the defect, its impact, and the commit SHA + branch it was diagnosed against.
-2. **Findings**: per bug: symptom and evidence (`file:line`, command output, failing test); the causal chain from symptom to root cause (five-whys); the principle it broke, citing `~/.agents/rules/` when one maps; what was tried and ruled out; confidence.
-3. **Open questions**: what's still unknown that `/plan` must resolve.
-4. **Next step**: this report feeds `/plan` (or `/grill` first if the remedy space is wide).
+Re-read each path and line against the code before you write it. A confident wrong
+cause sends the next session into the wrong file. Where the cause is not established,
+say so, give the leading hypothesis, and say what observation would confirm it. Mark
+every finding as confirmed or as hypothesis, and never let the two blur.
 
-## Before done: challenge the diagnosis
+## What the document holds
 
-Run the producer gate from `adversarial-review` against the reproduction, causal chain,
-ruled-out causes, and every `confirmed` versus `hypothesis` label. A finding that breaks
-the cause reopens `/debug`; do not write around it.
+The defect, its impact, and the commit and branch it was diagnosed against.
 
-## Rules
+Per finding: the symptom with its evidence, a path and line, a command's output, a
+failing test; the chain from symptom to cause, each step naming why the one above it
+happened, down to the step whose fix would remove every symptom listed; the principle
+it broke, where one applies; what was tried and ruled out; and how confident you are.
 
-- Redact secrets and PII.
-- Reference existing artifacts (issue, commit, prior plan) by path; don't restate them.
-- If the session's own conclusion now looks wrong, say so instead of writing it forward as settled.
+What is still unknown that the fix will have to settle.
+
+Inline the evidence. An issue, a commit, or an earlier document goes by path or URL
+rather than restated, since a copy of it here goes stale where the original does not.
+Write no "as we discussed", since the reader was not there. Keep secrets and personal
+data out. Where the session's own conclusion now looks wrong to you, say that rather
+than writing it forward as settled.
+
+## Before it is done
+
+Run the adversarial-review skill against the reproduction, the causal chain, the
+ruled-out causes, and every confirmed-versus-hypothesis label. A finding that breaks
+the cause reopens the investigation. Do not write around it.
+
+Attach the document to the defect's card, creating one where none exists.

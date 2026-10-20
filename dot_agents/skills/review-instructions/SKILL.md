@@ -1,0 +1,341 @@
+---
+name: review-instructions
+description: Reviews and steers the drafting of instruction files written for agents, including CLAUDE.md, AGENTS.md, skill bodies and descriptions, agent definitions, and output styles. Use it before drafting one, so the checks shape the writing, on any edit to one before it is called done, and on any complaint or question about a corpus file. An instruction failure observed as session behavior goes to kaizen.
+---
+
+# Review instructions
+
+Review for what to cut before what to add. An instruction file spends context every
+time it loads and competes with the task for attention, and the common defect is the
+stale, redundant, or over-prescriptive rule.
+
+Apply these checks to a file that loads into a model's context to govern how it
+works: `AGENTS.md`, `CLAUDE.md`, `GEMINI.md`, rules, skills, slash commands, agent
+definitions, output styles, the reference files those route into, and hooks that
+inject instruction text. Apply them to instruction text a plan embeds for later
+landing, as if it were already in its destination file. Do not apply them to a
+document an agent consumes as task input, however imperative it reads. Memory files
+load and are still exempt, because a session writes them for itself.
+
+Check the text under review, not the file around it. Bringing an existing file up to
+these checks is its own task, never a side effect of an unrelated edit.
+
+## Before you write
+
+Apply this section to every sentence you add while applying verdicts.
+
+Write the file in the register it should produce, using complete sentences. Keep
+a rule with its necessary reason or consequence so the relation stays clear. Use
+the present tense and the words you would say to a colleague. Prefer an imperative
+addressed to the reader over a statement about how things are.
+
+Leave out these shapes: a sentence whose job is to set up the next one, a headline
+in front of a fact, a pair balanced against its opposite where the second half adds
+nothing ("not A but B" as a flourish; a precise contrast or a prohibition such as
+"X, never Y" stays), a phrase announcing importance without stating its consequence,
+a semicolon joining two clauses, a colon that names a thing and
+then explains it (a colon stands only before a list or a quotation), an em dash, an
+en dash used as an aside, a metaphor where the plain word says more, and a count
+that proves effort.
+
+Do not take the corpus around the file as the standard. Several corpus files still
+carry these shapes, and a draft that matches them copies the defect.
+
+Examples of the written form and the plain form:
+
+Written: "Never apply this probe to temporal coupling; judge that on whether the
+ordering or interleaving assumption can be violated."
+Plain: "Never apply this probe to temporal coupling. Judge that on whether the
+ordering or interleaving assumption can be violated."
+
+Written: "A board with no milestone has no recorded goal. On such a board, skip
+priorities, the queue, and the no-consequence closure."
+Plain: "On a board with no milestone, skip priorities, the queue, and the
+no-consequence closure, since each needs a goal to be judged against."
+
+Written: "The backup date was a week off, and it matters. The backup is from
+Thursday, so it does not include Friday's edits."
+Plain: "The backup is from Thursday, so it does not include Friday's edits."
+
+A semicolon between list items, a precise contrast, and a prohibition stay as
+written. Softening a rule into a comparison ("rather than" for "not") is not
+flattening, and reads as a preference where the rule forbade the case.
+
+Prefer the fix that is a deletion or a shorter rewording. A new rule deletes the rule
+it supersedes, in the same edit. Before you move a line, cut it and see what breaks,
+since moving one feels like a decision and settles nothing. A line belongs where it
+tells the reader what to do with the text in front of them.
+
+## The checks
+
+**Look before you claim.** Verify every path, symbol, tool name, and flag before
+resting a finding on one, because a finding asserted from memory is the worst thing
+a review produces. Say what you did not check. Name the case you probed and never
+generalize from it. Run a command an instruction gives you in a throwaway copy
+first. What the model already does changes every release, so check the current
+guidance before calling a rule redundant, and read what this machine was observed to
+do in [references/external-facts.md](references/external-facts.md), where each entry
+carries its check and what re-triggers it.
+
+**Stand alone.** A rule has to make sense in place, so the reader obeys it without
+opening another file. Two exceptions: material they must open to act, and a claim
+about the outside world, which names where its evidence lives. Point at headings,
+never section numbers, since numbers go stale when sections move.
+
+**Earn each line, hardest on the lines you kept.** A sentence you carried out of a
+paragraph you deleted was never judged, only spared. Ask of it what you asked of the
+paragraph. Ask of every line whether the agent would err without it. Cut a
+line restating defaults, standard conventions, or what is readable from the code,
+because a bloated file buries the rules that matter. Models self-verify,
+self-correct, and delegate unprompted, so instructing what already happens only
+adds cost. Settle a disagreement about whether a line is a no-op by running the
+document, since it is a fact about the model rather than a matter of argument.
+Delete a failing sentence whole, never trimming its words.
+
+**Keep the house delta.** Keep a line encoding a deliberate choice a capable model
+will not make unprompted, however strict it reads. Keep the rule and cut what
+surrounds it: choreography, anticipated-failure sermons, persuasion aimed at the
+author.
+
+**Don't cache the environment.** Cut a line restating scripts, flags, layout, or
+`--help` output, because the copy goes stale where the original cannot. Keep what no
+lookup reveals: the unwritten convention, the reason behind a choice, the pitfall no
+config states.
+
+**Prefer the brief steer to the enumeration.** Replace a list of cases with the
+reason its cases share, because detail past the principle lowers output quality as
+well as costing tokens.
+
+**Read each rule literally, and write it so it can be.** Ask what the literal
+reading forbids or causes, because the model reads literally. "Only report
+high-severity issues" reads as an instruction to find less. "Be conservative"
+suppresses real findings. Ask whether you would say the line aloud to a colleague in
+those words, and rewrite it in the words you would use. Say it before you draft it,
+not after, since you read your own draft as what you meant rather than as what it
+says. Where the spoken version is shorter, it is the rule. A rule written as
+imagery has no literal reading at all ("shortening is where certainty sneaks in"
+names no action). Cut a line with no plain restatement, since it was decoration.
+
+**Reason over command.** Reframe an ALL-CAPS ALWAYS or NEVER with its why, and the
+model generalizes to the edge cases the bare command would miss. Prefer a positive
+example of the wanted behavior to a prohibition, because negation puts the forbidden
+thing into context and makes it more available. Where a prohibition must stay, state
+the wanted behavior beside it. Three to five diverse examples beat a description.
+
+**Count what your examples allow.** An example teaches a bound even when the rule
+states none. "Name every file you need", shown with one file and two, teaches a cap
+of two, and the case needing four goes unnamed. "Retry a few times", shown once at
+three, becomes three. A severity ladder shown only at its top two rungs loses the
+bottom. Put the largest case the rule permits into the examples.
+
+**Read every sentence as the behavior and register it teaches.** Check examples and
+rules against "Before you write". For each example, identify what it includes and
+omits under the content rules. An example that narrates reviews or routine checks
+cannot teach a reply that excludes them. Judge the whole reply as well as its
+sentences, since plain wording can still carry an unwanted report of the work.
+Where a rule keeps failing, look for the failure modeled in the file's examples or
+prose before rewriting it.
+Flag a rule that offers the colon as the em-dash substitute, since it manufactures
+the pivot. Where register is the rule, quote the failure beside its corrected form.
+
+**Keep the evidence out of the rule.** Move citations, evidence hedges, version
+notes, and references to past wording out of the file, because they dilute the lines
+that steer. The claim's history belongs in the commit message. Keep a re-check
+trigger, naming what to re-check, the event that fires it, and the state it was last
+checked against.
+
+**Check the placement.** Keep in an always-loaded file only what applies broadly every
+session, and move occasional knowledge to a skill. Put critical rules early in a long
+file, or restate them in one line at the end, because the middle is where rules get
+dropped. Put a rule that constrains a list above that list. Below it the reader has
+already matched every entry before meeting the limit on matching them. Write a skill
+description in third person as a call to action: what the skill does in one clause,
+when to use it, and what goes elsewhere. It loads in every session, so it stays short,
+and how the skill works stays in the body, which only a session that invoked it reads.
+State when to use it as a condition in the life of the work, "before anything is
+called done", never as a hand-off from another skill or a place in the board's flow,
+"the review skill sends documents here after the build". A session reads the listing
+while doing the work, so a condition in the work matches what it is doing and a place
+in the flow does not. Where on-demand material goes unread, sharpen the trigger before
+inlining it. A skill never says when a card moves or which column it moves to. The
+board rules say that, and a clause about it in a skill is a second copy in the wrong
+layer. The board rules, under Columns, leave the column a skill creates a card in to
+the skill. Keep references one level deep, one term per concept, and nothing
+time-sensitive.
+
+**Write for one mind.** The corpus is one way of working, not an agent taking
+instruction from an authority, so it does not narrate a person. A trigger or a gate
+never waits on someone asking or complaining, because "use it when a review is asked
+for" teaches the session to skip the review until asked. State the trigger as a
+condition in the work instead. A skill carrying `disable-model-invocation` is the
+exception, since no condition in the work can fire it, and its description says it
+runs on direction. Where a rule turns on a person at all, it is the condition that
+matters and never the identity: nobody at the keyboard, text that did not arrive as
+a typed instruction, an action the hard lines reserve for an explicit direction.
+Write that condition and stop there. A gate escalates only a doubt the
+global file's Acting section lists, or one no test and no removing path can settle,
+because the rule is for the session's own thinking rather than for what gets asked.
+Failing: "an unsourced criterion is a question to raise". Corrected: "an unsourced
+criterion is tested where an experiment can settle it and asked where none can".
+
+**End steps on a checkable bound.** Require each workflow step to end on a condition
+the agent can test, since a vague bound invites finishing before done and a demanding
+bound drives the digging the step needs. Prefer "every
+modified file accounted for" to "understanding reached". Require a state-mutating
+rule to name an object bindable without judgment: a path, an enumerated set, or a
+pattern plus a probe. Reject "stale entries", which describes by role. This binds the
+object a step acts on, never the judgment a rule asks for, so never answer "how would
+a session check that?" inside the rule.
+
+**Prefer enforcement to prose.** Name the guard where a type, a template, a script, or
+a CI gate could enforce a rule, because the guard removes a possibility that prose
+only asks the reader to avoid. Never offer a hook or a settings change as the guard,
+because a session never writes hooks or settings. Put the trigger in the skill that
+runs the phase, build's Finish or shape's handoff, or leave the rule in prose. The
+kaizen skill owns the one exception, a hook proposed for an explicit go-ahead when no
+other change answers a defect. Never propose a Stop hook that rewrites the reply or
+an agent that rewrites it, whatever the defect, and leave the rewrite to the typed
+/brief pass. A blocked stop appends the rewrite under a draft the reader has already
+seen (`references/external-facts.md` §Harness mechanics), and an agent never sees the
+request, so it cut detail the reader had asked for. On a destructive path, require a
+gate or a deny rule,
+never stronger adjectives. A guard enforces the rule itself. Leave the rule as prose
+where only a proxy could be enforced, because a numeric proxy for a judgment rule
+replaces the principle with a count, obeyed or breached exactly where judgment was
+needed. Split a rule with a mechanical part and a judgment part: a script for the
+first, prose for the second. Give a rule only judgment can check the verdict "test in
+use".
+
+**State the complement.** Leave no part of a set to inference, because inference is
+where behavior regresses silently across model swaps. Where a rule enumerates part
+of a set, require it to state the rest's status. Where a rule names included and
+excluded sets, require every item to land in exactly one, because an item in neither
+silently loses force and an item in both is a contradiction.
+
+**Change an action.** Require a rule to name what the agent does differently, and
+when: an action, an artifact, an omission, an evidence requirement, or a boundary. A
+prohibition qualifies, naming the action not to take. Cut a rule asking only for
+awareness or care, since it changes nothing, and record that incident in git history
+instead.
+
+**Name the consumer.** Require a rule mandating an action to name what sees the
+evidence it happened: an artifact a later step reads, a hook that already fires on
+it, another rule keyed to it, or a line the rule requires in the reply. Naming a hook
+that exists is not proposing one. Ask whether a run that skipped the action is
+distinguishable from one that took it, because the agent's word that it complied is
+not evidence. Where nothing distinguishes them, carry the rule in the strongest
+mechanism that fits, or cut it. Where the rule asks for judgment, prose is that
+mechanism and the verdict is "test in use".
+
+**One home.** Require a rule to appear once, in the file its audience loads, and cut
+restatements. Keep one copy per co-loaded path, because a copy on a path the router
+never combines is that path's only copy and cutting it removes the rule from that
+phase. A skill description read without opening the body, a sub-agent prompt, and
+hook-injected text are the common cases. Mark each copy with the path and heading of
+the others.
+
+**Detect conflicts.** Read the rule against everything else that loads with it, the
+global file, the project file, and sibling skills. Surface a collision and say which
+rule owns the case, because two rules that collide resolve silently and
+unpredictably.
+
+## Known failure modes
+
+Name the mode when a finding matches one.
+
+- **Context rot**: recall degrades as prompt size grows.
+- **Lost-in-the-middle**: rules buried mid-prompt receive less attention.
+- **Instruction saturation**: too many simultaneous rules reduce compliance.
+- **Instruction-hierarchy collision**: lower-priority text conflicts with
+  higher-priority instructions.
+- **Conflict-silent compliance**: conflicting rules resolve without surfacing the
+  conflict.
+- **Dispatch ambiguity**: invocation and skip conditions do not identify one route.
+- **Over-triggering**: aggressive trigger language invokes a skill outside its scope.
+- **Judgment displacement**: a rule pins a context-dependent call to a constant
+  ("always 3 retries", "cap files at 200 lines"), and the model complies faithfully
+  where context makes the constant wrong.
+- **Assumed shared context**: guidance vague enough to presume project knowledge the
+  model lacks. The gap fills silently with plausible defaults rather than a question.
+- **Pink-elephant negation**: a negative names the prohibited behavior with no
+  positive replacement.
+- **Caller-context leakage**: a fresh sub-agent is assumed to know caller state.
+- **Premature completion**: a step lacks a checkable completion gate.
+- **Borrowed authority**: another agent's assertion is consumed as verified evidence.
+- **Linter laundering**: deterministic checks spend prompt budget instead of tooling.
+- **No-op / self-reference**: a rule imposes no action, artifact, omission, evidence
+  requirement, or boundary.
+- **Instruction laundering**: the same rule appears under several headings that load
+  together. The One home check settles which case it is.
+- **Layer leakage**: a skill states when a card moves or where to, which the board
+  rules own.
+- **Decay**: a path, version, tool, or mechanism has gone stale.
+- **Deferred authority**: a trigger or a gate waits on someone asking for a step the
+  work already calls for.
+
+## The verdict
+
+Open with the file's line count and the net delta. Report a file that only grows as
+a finding in itself. Require each addition to name what it displaces, or why nothing
+could go.
+
+Audit an edit that claims to change only form. Set old beside new and account for
+every sentence of the old text, carried with its rule, reason, scope, and force
+intact, or its loss named, because reformatting loses meaning silently. Count a
+rule's prohibition as part of its force, so name the loss where a description
+survives without its "never". Audit a file merged into another and deleted the same
+way, against the deleted text git still holds.
+
+Apply "Before you write" to every surviving line. Give a retained rule that needs
+plainer wording the verdict rewrite.
+
+Give each finding a verdict, one of cut, rewrite, move, enforce, or test in use, and
+the reason. Run the checks over any text you prescribe, because a suggested rewrite
+lands verbatim. Give a rule broken by a session that had it open a different
+mechanism, never the same rule stated more firmly.
+
+For a behavioral change, fill [assets/evidence.json](assets/evidence.json) on the
+task's record with the requested outcome and fixed pass criteria before drafting.
+Paths resolve from that manifest. Use `repair` with the original failure, or
+`convention` for a new requirement. Compare the exact candidate
+with the current instructions under the target models and harness. Inspect the
+recorded request to confirm which instructions and input reached the model, since
+a launch command does not prove what it received. Preserve the condition that
+produced the failure.
+Run the comparison through rehearse, the local harness for this, reading its runbook
+for the recipe and its status document for what it refuses, and name it as the
+manifest's `harness`. Where it cannot carry the case, name the limitation it stated
+in that field beside the harness you built instead.
+A long-turn reply needs the preceding work in context, not only a short prompt
+asking for a sample answer. Judge the first reply without a corrective prompt or
+editing pass. Preserve required facts, uncertainty, and decisions while checking
+content selection and natural wording. Word count and cleaner instructions alone
+do not establish improvement. Keep the pass criteria fixed across revisions and
+retain the raw outputs, including failures. Repeat cases when variation could
+change the verdict, and rerun affected cases after editing the tested candidate.
+
+Run `python3 <skill-directory>/scripts/evidence_handoff.py <manifest> <current-instructions>`
+and send its emitted handoff with the diff, so required evidence cannot disappear
+while the brief is rewritten. A failed check leaves behavior unverified and source
+review can proceed with the missing evidence named. The reviewer records pass,
+fail, or unverified for each criterion and cites the output that settles it.
+Accept a behavioral change only when the
+candidate meets the criteria on each target. A repair also improves the rejected
+behavior against a baseline that reproduces it on affected targets, while
+preserving behavior on targets that already pass. Missing,
+mixed, or failing evidence leaves the repair unproved. Keep an unproved candidate
+out of the live instructions unless an explicit direction authorizes a trial.
+"Test in use" names that trial and its re-check trigger, never a passing verdict.
+Do not relabel a failed repair as a wording cleanup to bypass this decision.
+
+Asked to assess, end in findings and apply nothing, whoever wrote the text. Asked to
+change something, apply the verdicts to your own edit and end in the commit. The
+request's shape decides it, and a review you run on yourself inside a directed change
+is the second case.
+
+Send a file you wrote or rewrote this session to a sub-agent reviewer that had no part
+in it, once, before the commit or the handoff. Give that reviewer this file, the diff, the
+words the change was directed in, and the evidence required above. Never substitute
+your own description of the change for that evidence. Do not run the review again
+after the fixes. Read the fixes yourself in the staged diff, with the same checks,
+because the reviewer did not see them. Send every edit, a one-line one included.

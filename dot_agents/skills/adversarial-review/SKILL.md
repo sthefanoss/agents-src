@@ -1,130 +1,104 @@
 ---
 name: adversarial-review
-description: >
-  Independent, unprimed review of work you produced THIS session; the brief withholds
-  your conclusions so the reviewer reaches its own verdict; findings are relayed in its
-  words. Invoke on "adversarial review", "red-team this", "unbiased second opinion on
-  what I just did". For code you did NOT write (PR review, external audit), recommend
-  /review or /code-review to the user instead; both are user-invoked only. Skip for
-  a substantial pre-merge unit needing all five axes → /panel-review.
+description: Governs independent skeptical review, evidence, and finding dispositions. Use when a document or decision needs an adversarial review before it is called done. Documentation criteria belong to review-docs.
 ---
 
-# Adversarial Review
+# Adversarial review
 
-**Wrong skill if:** reviewing code you did NOT write this session (PR review, external audit) → recommend `/review` or `/code-review` to the user; neither can be invoked by an agent. A substantial pre-merge unit needing all five axes → `/panel-review`.
+The brief decides whether the review is worth anything. A reader told where you
+landed confirms it. A reader told nothing forms its own view.
 
-Spawn an independent agent to review work done this session, and construct the
-brief so it reaches its own verdict instead of ratifying yours.
+This covers a document or a decision you produced this session.
 
-This applies to any artifact you produced this session: code, but also reasoning
-docs (a spec, an options survey, a plan). For a doc there's nothing to run, so the
-"how to verify" mandate below becomes: red-team the reasoning: unstated assumptions,
-scope gaps, an unquestioned premise, a conclusion that doesn't follow from what's
-stated. (Producer skills call this gate automatically; see "As a producer gate".)
+For a document, load the Document criteria in review-docs before building the
+brief and include them in this review's mandate. Loading those criteria does not
+start a separate review.
 
-## Send the reviewer
+For a decision, challenge its unstated assumptions, gaps in scope, unquestioned
+premises, and conclusions the evidence does not support.
 
-- **The goal / requirements**: what the work was meant to achieve, in the user's
-  terms. Without the spec a reviewer can only judge style, not whether you solved
-  the right problem. If no goal was stated this session, ask the user for it before
-  building the brief; don't invent one.
-- **The artifact as primary source**: the diff, the files, the `file:line`
-  ranges. Point at the actual code or text and let it read for itself; don't
-  summarize it.
-- **How to verify**: the test command and how to run it. Tell it to run things,
-  not to trust that they pass.
-- **The mandate**: "Assume there are problems and find them. Default to skeptical. Cite
-  `file:line` and give a concrete repro or counterexample for each finding; drop anything
-  you can't substantiate by a command or by a stated argument. Label each finding
-  **verified by command** or **reasoning only**, and name the command. Rank each finding
-  Blocker / Major / Minor: Blocker: the artifact is wrong or unsafe as written; Major: it
-  changes the approach, the evidence, or what the next stage will do; Minor: bounded cost.
-  If a severity has nothing in it, say so. If the work is sound as written, say that
-  plainly; a clean report is a valid result, not a failure to look."
+## What the reviewer gets
 
-  Include that ladder only in a **general** agent's brief. `code-reviewer`,
-  `testing-reviewer` and `instructions-reviewer` rank on their own; don't restate this one
-  at them. Either way a Blocker or Major here always names a defect, so each takes a
-  disposition and never the Advisory route; a Minor may take it
-  (`~/.agents/rules/reporting_findings.md` §Reading a reviewer's severity ladder; edit
-  both).
+The goal as it was stated to this session, since a reviewer without it can only
+judge style rather than whether you solved the right problem. Where no goal was
+stated this session, ask for it and end the turn before you build the brief, since
+a reviewer sent a goal you inferred reviews your inference.
 
-## Withhold: this is the point
+The artifact itself, as the diff, the files, the lines. Point at it and let it read.
+A summary of the work is your reading of it.
 
-- Your own assessment: "I think this is correct," "tests pass," "the tricky part
-  is handled." Anything that says where the answer lands.
-- Which parts you're confident in or already checked; that steers the reviewer
-  away from exactly where your blind spots are.
-- Reassuring or leading framing. State the task neutrally.
+How to verify, where something runs: the command and how to run it, with the
+instruction to run it rather than to trust that it passes.
 
-Say it in the brief: "This brief deliberately contains no assessment of
-correctness; form your own from the code."
+The mandate. Open it with the read-only clause the delegation skill's read-only
+review spawn heading requires, since a general agent inherits the editing and shell
+tools and the brief is the only thing bounding it. Then: assume there are problems and
+find them, default to skeptical, cite the place, give a concrete reproduction or
+counterexample for each finding, and drop anything you cannot substantiate by a command
+or by a stated argument. Every finding says whether a command verified it or reasoning alone did, and
+names the command. A clean report is a valid result.
 
-## Scale to stakes
+Include these instructions in every reviewer mandate:
 
-One reviewer by default. For high-stakes or wide-blast-radius work, spawn two or
-three **independently**, same neutral brief, none sees the others, and union
-their findings; a single reviewer has its own blind spots. Route to a specialized
-reviewer when one fits: `code-reviewer` for code; `instructions-reviewer` only for
-instruction artifacts (rules, skills, agent definitions, CLAUDE.md/AGENTS.md, output
-styles, slash commands, hook-injected text; its own description enumerates the set;
-never a `.boris/` or `backlog/docs/` work product, however imperative it reads: a spec,
-plan, or diagnosis takes a general agent, with `.boris/CONTEXT.md` the one exception,
-which `instructions-reviewer` owns); otherwise a general agent carrying this brief.
+Independently discover the context needed to judge the artifact and its claims.
+Treat author-supplied references as starting points, since the author's selection
+can omit the context that challenges the change. Bound discovery to sources needed
+for that judgment. Name the context sources examined and any material gaps in the
+review report.
 
-## As a producer gate
+Rank each finding blocking, should-fix, or note, in the review-code skill's words under its
+Severity heading, and say so where a rank has nothing in it. Those words are written
+for code, so read them by what the finding costs. Blocking means the artifact
+is wrong or unsafe as written. Should-fix changes the approach, the evidence, or
+what the next stage does with it. A note carries a bounded cost. Turn each rank into a
+disposition by the mapping under that skill's Dispose heading, which decides on its own
+terms which findings are advisory.
 
-`/diagnose` and `/plan` end by running this skill on their own draft doc; each names
-its artifact-specific mandate aims; everything else about the gate lives here, once.
-(`/discuss`, `/research`, and `/grill` carry no gate: their artifacts
-are reread and stress-tested by the next stage, and `/plan`'s gate covers the chain's
-last ratified artifact; a skipped stage means no independent check, and the producing
-skill says so out loud.)
+## What the reviewer does not get
 
-- It fires when the artifact ratifies something expensive to reverse: an approach, a
-  lean, a plan. Skipping must be said out loud, never done silently.
-- Fold or explicitly defer each material finding before calling it done; a deferral takes
-  a disposition (`~/.agents/rules/reporting_findings.md`) and closes the finding for the
-  loop's purpose, never for the report; a finding that only restates what's already written
-  isn't material. One that invalidates the artifact's core (the lean, the approach) reopens
-  the producing stage; don't edit around it.
-- **Probe the fix before the artifact is called done.** An edit answering a finding that
-  named a compile error, a command, a count or a `file:line` gets that same probe re-run
-  against the new text. Writing a scratch program in a temp dir to run the probe does
-  not break the producing skill's no-code rule. Name each fix you probed and its command.
-- **The gate is one round.** Fold or defer the findings, probe the fixes, then decide out
-  loud: send the revised artifact back for one more round, or proceed. Rerun only when a
-  fix changed a claim about how code, tooling, or the platform behaves, or repaired a
-  Blocker in a way its probe cannot confirm; name the reason. One rerun at most; after
-  it, proceed regardless: give every open defect a disposition
-  (`~/.agents/rules/reporting_findings.md`), list every open advisory, and hand them to
-  the user. A finding that reopens the producing stage ends this gate; the redrafted
-  artifact gets its own single round; tell the user why. If the user asks to run until the
-  report is clean, say first what the residue will look like; a skeptical reviewer on a
-  long prose artifact does not return an empty list. Run further rounds only if they still
-  ask. Do not reintroduce a multi-round loop on your own initiative, absent evidence that
-  rounds converge.
-- If the gate catches the same class of gap across artifacts, or the same class in two
-  rounds on one artifact, the producing skill or your own revision loop is defective. Say
-  so to the user in that round, with the two instances quoted, before fixing the doc again.
+Your assessment. That the tricky part is handled. Anything that
+says where the answer lands.
 
-## Relay honestly
+Which parts you are confident in, or already checked. That steers the reader away from
+exactly where your blind spots are.
 
-Report findings in the reviewer's words; quote them, don't summarize; condensing
-is where softening enters.
+Reassuring framing. State the task flat, and put this in the brief: "This brief
+deliberately contains no assessment of correctness. Form your own from the artifact."
 
-Format, worst first:
+## Relay it in the reviewer's words
 
-> **[Severity] [Blocking | Decide | Noted]** `file:line`: <the reviewer's finding, verbatim or near-verbatim>
+Keep each finding verbatim with its raw evidence in the review artifact, worst
+first, including findings that invalidate the work. Link the artifact once from the
+task record. Keep your dispositions separate from the reviewer's words. The reply
+states an approach-killing finding before any defense and carries decisions still
+needed, without duplicating the artifact.
 
-The disposition is yours, not the reviewer's, and it never edits the reviewer's words
-(`~/.agents/rules/reporting_findings.md`). A finding that names no defect takes that
-file's **Advisory** route instead of a disposition.
+## As a gate on your own draft
 
-Every finding gets listed, including the ones that invalidate what you just did:
-no pre-arguing them away, no burying them under defenses. If you have a response,
-put it in a separate section clearly marked as yours, after the findings:
+A document that ratifies something expensive to reverse, an approach, a plan, a cause,
+runs this gate before it is called done. Say out loud when you skip this gate, and when
+you skip a stage that would have run it, since either way nothing checked the work but
+you.
 
-> **My response**: <your view, kept apart from the reviewer's words>
+Fold or defer each material finding. A deferral takes a disposition and closes the
+finding for the gate, never for the report. A finding that invalidates the document's
+core reopens the work that produced it, rather than being edited around. That ends this
+gate, the redrafted document gets a fresh round of its own, and the reply says why.
 
-A finding that kills the approach gets stated plainly first, before any defense.
+An edit answering a finding that named a compile error, a command, a count, or a line
+gets that same probe re-run against the new text. Name each fix you probed and the
+command. A throwaway program in a temporary directory counts as a probe, and running
+one does not breach a producing skill's bar on changing the system it is studying.
+
+The gate is one round. Fold the findings, probe the fixes, then say out loud whether
+you are sending it back once more or proceeding. Send it back only where a fix changed
+a claim about how something behaves, or repaired a blocking finding in a way its probe
+cannot confirm. One rerun at most. After it, proceed, giving every open finding a
+disposition. Run a further round only where one is asked for. Where a clean report
+is asked for, say first what the residue will look like, because a skeptical reader
+of a long document does not return an empty list.
+
+Where the gate catches the same class of gap across two documents, or twice on one, the
+defect is in what produced them rather than in the draft. Name whether that is the
+producing skill or your own revision loop. Say so in that round's reply, with both
+instances quoted, before fixing the document again.

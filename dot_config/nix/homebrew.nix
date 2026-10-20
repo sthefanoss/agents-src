@@ -6,11 +6,18 @@
 
     taps = [ "joaofnds/tap" ];
 
+    brews = [
+      "ruby"
+      "opencode"
+    ];
+
     casks = [
       "appcleaner"
       "brave-browser"
+      "chatgpt"
       "claude"
       "claude-code@latest"
+      "codex"
       "font-computer-modern"
       "font-iosevka-aile"
       "font-iosevka-ss08"
@@ -29,7 +36,6 @@
       "spotify"
       "tailscale-app"
       "the-unarchiver"
-      "visual-studio-code"
       "vlc"
       "zed"
     ];

@@ -1,72 +1,68 @@
 ---
 name: deslop
-description: Remove AI writing patterns from prose: essays, docs, plans, commit-message bodies, code comments. Skip standing instruction files; these slop checks never apply to them, however their prose reads.
+description: Removes the writing patterns that mark prose as machine-written from documents, commit bodies, comments, and essays. Use before delivering prose others will read. Standing instruction files go to review-instructions, and the brief output style governs replies.
 ---
 
 # Deslop
 
-Eliminate predictable AI writing patterns from prose. The pattern inventories are
-[references/phrases.md](references/phrases.md), throat-clearing openers, emphasis
-crutches, empty adverbs, vague declaratives, and
-[references/structures.md](references/structures.md): binary contrasts, negative listing,
-dramatic fragmentation, rhetorical setups, false agency.
+Prose written by a model carries patterns a reader recognizes. They survive rereading
+because they read as fluent. Two inventories hold them.
+[references/phrases.md](references/phrases.md) covers the patterns that live in a
+word or a phrase, and [references/structures.md](references/structures.md) covers the
+ones that live in a sentence's shape or a paragraph's rhythm.
+[references/examples.md](references/examples.md) shows the pairs. Each file's own
+headings are the full set, so open it rather than working from a summary.
 
-## Scope
+## What this covers
 
-Skip text that persists into an agent's context as standing instructions: AGENTS.md,
-CLAUDE.md, GEMINI.md, rules files, memory files, slash commands, skills (the whole
-package: `SKILL.md` and its `references/`, not just the top file), agent definitions, or
-anything loaded the same way. Don't clean these: their prose stays as written, whatever
-else does or doesn't separately check it; that's accepted, not a gap to route around.
-Clean one only if the user names that specific file and asks for it.
+A document read once and acted on is in scope: a shaped task, a diagnosis, a handoff,
+a README, a design record, a commit body, a comment.
 
-Task-scoped documents an agent reads once, plans, handoff briefs, research notes,
-READMEs, PRDs, are in scope. They're prose, not standing instructions.
+A file that loads as standing instructions is not: AGENTS.md and CLAUDE.md, a skill and
+everything under it, an agent definition, an output style, a rules file, a memory note,
+or any other file an agent reads as instructions rather than as work. The
+review-instructions skill governs those, and its register rules differ. Where the
+direction names one, run review-instructions on it instead of this pass, because this
+pass's checks strip the prohibitions that skill treats as a rule's force.
 
-## Checks
+## The pass
 
-This is the fast gate; run it before delivering prose. For a full pass, open both
-[references/phrases.md](references/phrases.md) and
-[references/structures.md](references/structures.md) and walk every category; each
-holds categories this list doesn't spell out. When a single check fires and you need
-the exact pattern, open just the file that holds it.
+Run the fast checks below before delivering prose. Open an inventory when a check
+fires and you need the exact pattern, and walk both when the whole document needs the
+pass.
 
-- Adverb that adds no degree, timing, frequency, or uncertainty? Kill it.
-- Throat-clearing opener ("here's what", "it's worth noting")? Cut to the point.
-- Emphasis crutch ("full stop", "let that sink in", "this matters because")? Delete it only when the causal or qualifying content survives the cut.
-- Business jargon ("navigate", "unpack", "deep dive", "circle back")? Replace with plain language.
-- Passive voice hiding a relevant actor? Name the actor and lead with them; keep it when the actor is unknown, irrelevant, or meant to stay unnamed.
-- Inanimate thing doing a human verb ("the decision emerges") where responsibility matters? Name the person; keep the phrase if it's a precise technical metaphor with no actor to name.
-- Wh- sentence openers repeating as a mannerism? Restructure one.
-- "Not X, it's Y" where the distinction adds nothing? State Y directly; keep it when the distinction is logically necessary.
-- Negative listing ("Not a X... Not a Y... A Z.")? State Z directly; the reader doesn't need the runway.
-- Rhetorical setup ("What if...", "Think about it:")? Make the point directly.
-- Vague declarative ("The implications are significant")? Name the specific implication.
-- Lazy extreme ("every", "always", "never") doing vague work? Name the actual scope.
-- Narrator-from-a-distance ("Nobody designed this")? Put the reader in the scene; "you" beats "people".
-- Dramatic fragmentation: sentences clipped or stacked for effect ("X. And Y. And Z."; "This unlocks something. Finally.")? Write complete sentences.
-- Third item padding out a list of three? Cut it; keep all three when the list is a complete taxonomy.
-- Every paragraph ending on a punchy one-liner? Vary some.
-- Em-dashes repeated and carrying no clause the sentence needs? Swap them for commas or periods.
-- Softening or hand-holding ("and that's okay", "not always, not perfectly")? Cut it. State the fact and trust the reader.
-- Meta-joiner ("The rest of this essay...")? Delete. Let the essay move.
+- An adverb carrying no degree, timing, frequency, or uncertainty goes.
+- An opener that announces the point instead of making it goes.
+- An emphasis crutch goes, where the causal or qualifying content survives without it.
+- Business jargon becomes the plain word.
+- The passive voice names its actor, where the actor matters and is known.
+- An inanimate subject doing a human verb names the person, where responsibility is
+  the point, and stays where it is a precise technical term with no actor to name.
+- "Not X, it's Y" becomes Y, unless the distinction is load-bearing.
+- Negative listing becomes the positive statement.
+- A rhetorical setup becomes the point it was circling.
+- A vague declarative names the specific thing.
+- An extreme word ("every", "always", "never") doing vague work names the real scope.
+- Sentences clipped or stacked for rhythm become whole sentences.
+- A third list item padding a pair goes, unless the three are a complete set.
+- An em dash becomes a comma or a full stop.
+- Softening that reassures the reader goes. State the fact.
 
-## Guardrails
+## What not to break
 
-- Preserve what the passage asserts. Never invent a fact, actor, scope, or implication to
-  satisfy a check: when a check calls for a specific the text doesn't supply, leave the
-  sentence and name it for the author instead of guessing. Applies to your own drafts too.
-- **Text you did not draft:** confine each edit to the sentence, or, for rhythm and
-  repetition patterns, the span, that exhibits the pattern, and prefer the smallest edit
-  that kills it. Prose that passes the Checks stays as written. On your own draft there's
-  no original to preserve; rewrite freely.
-- Comment you're about to polish? Run `coding_style.md`'s test first: "will this code
-  be misread or silently broken without it?" A comment that survives slop cleanup but
-  fails that test gets deleted, not rewritten.
-- Commit message? Clean the body only. Leave the subject line alone; its format is a
-  project-specific convention these Checks don't touch. This applies even to a commit
-  message you're drafting yourself.
+The passage asserts something, and the pass preserves it. Where a check calls for a
+specific the text does not supply, leave the sentence and name it for the author.
+Never invent a fact, an actor, a scope, or an implication to satisfy a check.
 
-## Examples
+In text you did not draft, confine each edit to the sentence that carries the pattern,
+or to the span for a rhythm pattern, and prefer the smallest edit that kills it. Prose
+that passes stays as written. Your own draft has no original to protect, though
+inventing to satisfy a check is barred there the same as anywhere.
 
-See [references/examples.md](references/examples.md) for before/after transformations.
+Before polishing a comment, apply the test in `~/.agents/rulebook/coding-style/core.md`
+§Comments default to zero, whether the code gets misread or silently broken without
+it. A comment that survives the pass and fails that test is deleted rather than
+rewritten.
+
+In a commit message, clean the body and leave the subject alone, since its format is
+the project's convention.

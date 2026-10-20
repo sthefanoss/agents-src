@@ -1,0 +1,6 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+root="$HOME/.agents/workflows/iterate"
+bun install --cwd "$root" --frozen-lockfile --silent
+exec bun "$root/src/main.ts" "$@"

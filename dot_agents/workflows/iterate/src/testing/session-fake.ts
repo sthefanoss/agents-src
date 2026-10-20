@@ -1,0 +1,174 @@
+#!/usr/bin/env bun
+import { connect } from "node:net";
+import process from "node:process";
+import { spawn } from "bun";
+
+const descendant = process.argv.includes("--descendant");
+const interrupted = ["interrupt", "timeout"].includes(process.env.SESSION_SCENARIO ?? "");
+const control = connect(process.env.SESSION_CONTROL ?? "");
+let child: ReturnType<typeof spawn> | undefined;
+const deadline = setTimeout(() => process.exit(2), 10_000);
+const emit = (event: unknown) => console.log(JSON.stringify(event));
+const killed = (taskId: string) =>
+  emit({ type: "system", subtype: "task_updated", task_id: taskId, patch: { status: "killed" } });
+
+function stop() {
+  clearTimeout(deadline);
+  child?.kill("SIGKILL");
+  process.exit(0);
+}
+
+control.on("error", stop);
+control.on("close", stop);
+control.on("connect", () => {
+  control.write(
+    `${JSON.stringify({ role: descendant ? "descendant" : "agent", pid: process.pid })}\n`,
+  );
+});
+control.on("data", (bytes) => {
+  const command = bytes.toString().trim();
+  if (command === "start") {
+    if (interrupted) {
+      process.on("SIGINT", () => {
+        /* exercise forced process-group shutdown */
+      });
+      process.on("SIGTERM", () => {
+        /* exercise forced process-group shutdown */
+      });
+      if (!descendant) {
+        child = spawn([process.execPath, import.meta.path, "--descendant"], {
+          stdin: "ignore",
+          stdout: "ignore",
+          stderr: "inherit",
+        });
+      }
+    }
+    if (!descendant) {
+      emit({
+        type: "system",
+        subtype: "init",
+        session_id: "claude-session",
+        model: "resolved-fake",
+        permissionMode: process.env.SESSION_SCENARIO === "default-mode" ? "default" : "auto",
+      });
+      emit({
+        type: "assistant",
+        message: { content: [{ type: "text", text: "progress before final" }] },
+      });
+    }
+    control.write("ready\n");
+  }
+  if (command === "finish") {
+    const final = process.env.SESSION_SCENARIO === "long" ? "x".repeat(100_000) : "final reply";
+    if (process.env.SESSION_SCENARIO === "truncated") {
+      emit({
+        type: "assistant",
+        message: { content: [{ type: "text", text: final }] },
+      });
+      stop();
+    }
+    console.error("fixture diagnostic");
+    const killedAtExit = process.env.SESSION_SCENARIO === "killed-at-exit";
+    if (killedAtExit) {
+      for (const [taskId, description] of [
+        ["b-gate", "Full gate rerun"],
+        ["b-stopped", "Stopped by the stage"],
+      ]) {
+        emit({ type: "system", subtype: "task_started", task_id: taskId, description });
+      }
+      killed("b-stopped");
+    }
+    emit({
+      type: "result",
+      session_id: "claude-terminal-session",
+      result: final,
+      is_error: process.env.SESSION_SCENARIO === "error",
+      errors: process.env.SESSION_SCENARIO === "error" ? ["provider failed"] : [],
+      permission_denials:
+        process.env.SESSION_SCENARIO === "denials"
+          ? [
+              { tool_name: "Bash", tool_use_id: "denied-1", tool_input: {} },
+              { tool_name: "Edit", tool_use_id: "denied-2", tool_input: {} },
+            ]
+          : [],
+      num_turns: 2,
+      total_cost_usd: 0.25,
+      usage: { input_tokens: 10, cache_read_input_tokens: 7, output_tokens: 3 },
+      modelUsage: {
+        "resolved-fake": {
+          inputTokens: 14,
+          cacheReadInputTokens: 9,
+          outputTokens: 5,
+          costUSD: 0.25,
+          canonicalModel: "resolved-fake",
+          costBasis: "list",
+        },
+      },
+    });
+    if (killedAtExit) killed("b-gate");
+    if (process.env.SESSION_SCENARIO === "killed-unseen") killed("b-unseen");
+    if (process.env.SESSION_SCENARIO === "killed-mid-turn") {
+      killed("b-monitor");
+      emit({ type: "assistant", message: { content: [{ type: "text", text: "next turn" }] } });
+      killed("b-late");
+    }
+    if (process.env.SESSION_SCENARIO === "killed-between-results") {
+      killed("b-gate");
+      emit({ type: "result", result: final, is_error: false });
+    }
+    if (process.env.SESSION_SCENARIO === "reinvoked") {
+      emit({
+        type: "result",
+        session_id: "claude-terminal-session",
+        result: final,
+        is_error: false,
+        num_turns: 3,
+        total_cost_usd: 0.25,
+        usage: { input_tokens: 1, cache_read_input_tokens: 2, output_tokens: 1 },
+        modelUsage: {
+          "resolved-fake": {
+            inputTokens: 14,
+            cacheReadInputTokens: 9,
+            outputTokens: 5,
+            costUSD: 0.25,
+            canonicalModel: "resolved-fake",
+            costBasis: "list",
+          },
+        },
+      });
+    }
+    if (process.env.SESSION_SCENARIO === "reinvoked-grown") {
+      emit({
+        type: "result",
+        session_id: "claude-terminal-session",
+        result: final,
+        is_error: false,
+        num_turns: 3,
+        total_cost_usd: 0.4,
+        usage: { input_tokens: 1, cache_read_input_tokens: 2, output_tokens: 1 },
+        modelUsage: {
+          "resolved-fake": {
+            inputTokens: 20,
+            cacheReadInputTokens: 30,
+            outputTokens: 8,
+            costUSD: 0.4,
+            canonicalModel: "resolved-fake",
+            costBasis: "list",
+          },
+        },
+      });
+    }
+    if (process.env.SESSION_SCENARIO === "reinvoked-uncosted") {
+      emit({
+        type: "result",
+        session_id: "claude-terminal-session",
+        result: final,
+        is_error: false,
+        num_turns: 3,
+        usage: { input_tokens: 1, cache_read_input_tokens: 2, output_tokens: 1 },
+      });
+    }
+    if (process.env.SESSION_SCENARIO === "malformed") console.log('{"type":');
+    stop();
+  }
+});
