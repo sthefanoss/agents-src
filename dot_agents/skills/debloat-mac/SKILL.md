@@ -33,6 +33,7 @@ MACOS_AI_SERVICES=(
   "com.apple.suggestd"
   "com.apple.mediaanalysisd"
   "com.apple.photoanalysisd"
+  "com.apple.knowledge-agent"
 )
 
 for service in "${MACOS_AI_SERVICES[@]}"; do
@@ -63,6 +64,7 @@ PROCESSES_TO_KILL=(
   "suggestd"
   "mediaanalysisd"
   "photoanalysisd"
+  "knowledge-agent"
 )
 
 for proc in "${PROCESSES_TO_KILL[@]}"; do
