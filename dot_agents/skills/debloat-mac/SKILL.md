@@ -1,16 +1,27 @@
 ---
 name: debloat-mac
-description: Disables and terminates macOS AI, Siri, and media-indexing LaunchAgents. Use on a direction to debloat macOS or stop macOS background AI and indexing daemons. Debloating booted iOS Simulators belongs to debloat-simulators.
+description: Disables macOS AI, Siri, and media-indexing LaunchAgents and terminates their processes, or re-enables the agents. Use on a direction to debloat macOS, to stop macOS background AI and indexing daemons, or to bring them back. Debloating or restoring booted iOS Simulators belongs to debloat-simulators.
 ---
 
 # Debloat macOS
 
-Run this script in `zsh`. Keep `VisionKit` (`vkd`) out of the target lists so on-demand Live Text OCR continues to work:
+Run this script in `zsh`. To undo an earlier run, change its first line to `MODE=enable`. Keep `VisionKit` (`vkd`) out of the target lists so on-demand Live Text OCR continues to work:
 
 ```zsh
-set -u
+MODE=disable
 
-UID_VAL=$(id -u)
+set -u
+case $MODE in
+  enable|disable) ;;
+  *) echo "MODE must be enable or disable, got: ${MODE}"; exit 1 ;;
+esac
+
+DOMAIN="gui/$(id -u)"
+AGENT_DIRS=(
+  /System/Library/LaunchAgents
+  /Library/Apple/System/Library/LaunchAgents
+  /System/Volumes/Preboot/Cryptexes/App/System/Library/LaunchAgents
+)
 
 MACOS_AI_SERVICES=(
   "com.apple.campo"
@@ -37,9 +48,16 @@ MACOS_AI_SERVICES=(
 )
 
 for service in "${MACOS_AI_SERVICES[@]}"; do
-  launchctl disable "gui/${UID_VAL}/${service}" 2>/dev/null || true
-  launchctl bootout "gui/${UID_VAL}/${service}" 2>/dev/null || true
-  echo "  [OK] Disabled: ${service}"
+  launchctl "$MODE" "${DOMAIN}/${service}"
+  [[ $MODE == disable ]] && launchctl bootout "${DOMAIN}/${service}" 2>/dev/null
+  plists=( ${^AGENT_DIRS}/${service}.plist(N) )
+  if ! launchctl print-disabled "$DOMAIN" | grep -qF "\"${service}\" => ${MODE}d"; then
+    echo "  [FAILED] ${service}"
+  elif (( ${#plists} == 0 )); then
+    echo "  [ABSENT] ${service}"
+  else
+    echo "  [${(U)MODE}D] ${service}"
+  fi
 done
 
 PROCESSES_TO_KILL=(
@@ -67,14 +85,24 @@ PROCESSES_TO_KILL=(
   "knowledge-agent"
 )
 
-for proc in "${PROCESSES_TO_KILL[@]}"; do
-  if killall -9 "$proc" 2>/dev/null; then
-    echo "  [KILLED] Terminated: $proc"
-  fi
-done
+if [[ $MODE == disable ]]; then
+  for proc in "${PROCESSES_TO_KILL[@]}"; do
+    killall -9 "$proc" 2>/dev/null && echo "  [KILLED] ${proc}"
+  done
+  sleep 5
+  for proc in "${PROCESSES_TO_KILL[@]}"; do
+    killall -s "$proc" >/dev/null 2>&1 && echo "  [RESPAWNED] ${proc}"
+  done
+fi
 
 vm_stat | head -n 10
 sysctl vm.swapusage
 ```
 
-Report the disabled service count, the terminated processes, and the `vm.swapusage` line in the reply.
+`[ABSENT]` marks a label with no plist on this macOS. The script still writes its override, so a later macOS that ships the agent finds it already disabled, and an undo clears what an earlier run wrote.
+
+With SIP enabled, `launchctl bootout` fails, so an agent that was already loaded stays loaded and launchd relaunches it after the kill. That is what `[RESPAWNED]` reports. launchctl(1) says a disabled service cannot be loaded until it is enabled again, and that this persists across boots. Tell the user that a respawned process run by one of these labels should stay off after the next logout or restart, and that only a run after one confirms it. A respawned XPC service such as `SiriSuggestionsBookkeepingService` belongs to no label here, so promise nothing for it.
+
+launchctl has no command that removes an override, so an undo leaves every label explicitly enabled. That also turns on `com.apple.campo` and `com.apple.intelligenceflowd` where Apple's feature flags would keep them off, since both plists carry a feature-flag `Disabled` key that the override replaces. Say so when reporting an undo.
+
+Report the count of each status, every `[FAILED]`, `[KILLED]`, and `[RESPAWNED]` entry by name, and the `vm.swapusage` line in the reply.
