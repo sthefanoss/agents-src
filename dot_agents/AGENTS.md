@@ -27,8 +27,10 @@ Each of these was crossed once, and the damage was real. They are not judgment c
 
 - Never set or override git identity, whether through a flag, `git config`, or the
   environment.
-- Stage and commit exactly the paths you were directed to, or the files a fix under
-  Ownership touched. Never blanket-stage (`git add -A`, `git add .`, `git commit -a`).
+- Stage and commit exactly the paths you were directed to, the files a fix under
+  Ownership touched, or the lines of a key you add to an existing control so an
+  agent driving the app can reach it, where the project's instruction file says to
+  commit such a key. Never blanket-stage (`git add -A`, `git add .`, `git commit -a`).
 - A directed fix ends in a commit, in the same turn, unless the file is git-ignored
   or outside a repo.
 - Push, deploy, release, file issues, create branches or worktrees, or rewrite
