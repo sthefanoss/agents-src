@@ -1,13 +1,13 @@
 return {
-	"williamboman/mason.nvim",
-	event = "BufReadPost",
+	"mason-org/mason.nvim",
+	event = "User LazyFile",
 	cmd = { "Mason", "MasonUpdate", "MasonUpdateAll" },
 	keys = {
-		{ "<leader>cls", "<cmd>LspStart<cr>", desc = "start" },
-		{ "<leader>clS", "<cmd>LspStop<cr>", desc = "stop" },
+		{ "<leader>cls", "<cmd>doautocmd nvim.lsp.enable FileType<cr>", desc = "start" },
+		{ "<leader>clS", "<cmd>lsp stop<cr>", desc = "stop" },
 	},
 	dependencies = {
-		"williamboman/mason-lspconfig.nvim",
+		"mason-org/mason-lspconfig.nvim",
 		"neovim/nvim-lspconfig",
 		"Saghen/blink.cmp",
 	},
@@ -22,15 +22,11 @@ return {
 			severity_sort = true,
 		})
 
-		vim.lsp.config("*", {
-			capabilities = require("blink.cmp").get_lsp_capabilities(),
-		})
-
 		vim.api.nvim_create_autocmd("LspAttach", {
 			callback = function(args)
 				local bufnr = args.buf
 				local map = function(mode, lhs, rhs, desc)
-					vim.keymap.set(mode, lhs, rhs, { buffer = bufnr, desc = desc })
+					vim.keymap.set(mode, lhs, rhs, { buffer = bufnr, nowait = true, desc = desc })
 				end
 
 				local client = vim.lsp.get_client_by_id(args.data.client_id)
@@ -61,14 +57,10 @@ return {
 				map("n", "<leader>cS", "<cmd>FzfLua lsp_workspace_symbols<cr>", "workspace symbols")
 				map("n", "<leader>cr", vim.lsp.buf.rename, "rename")
 				map("n", "<leader>cf", function()
-					require("conform").format({ lsp_fallback = true })
+					require("conform").format({ lsp_format = "fallback" })
 				end, "format")
 				map("n", "<leader>co", function()
-					local params = {
-						command = "_typescript.organizeImports",
-						arguments = { vim.api.nvim_buf_get_name(bufnr) },
-					}
-					vim.lsp.buf_request(bufnr, "workspace/executeCommand", params)
+					vim.lsp.buf.code_action({ context = { only = { "source.organizeImports" } }, apply = true })
 				end, "organize imports")
 			end,
 		})
@@ -93,21 +85,10 @@ return {
 			},
 		})
 
-		local ts_inlay_hints = {
-			parameterNames = { enabled = "all" },
-			parameterTypes = { enabled = true },
-			variableTypes = { enabled = true },
-			propertyDeclarationTypes = { enabled = true },
-			functionLikeReturnTypes = { enabled = true },
-			enumMemberValues = { enabled = true },
-		}
-
-		vim.lsp.config("vtsls", {
-			settings = {
-				typescript = { inlayHints = ts_inlay_hints },
-				javascript = { inlayHints = ts_inlay_hints },
-			},
+		vim.lsp.config("tsc", {
+			settings = { ["js/ts"] = { inlayHints = { parameterNames = { enabled = "all" } } } },
 		})
+
 
 		require("mason").setup()
 		vim.api.nvim_create_user_command("MasonUpdateAll", require("util.mason").update_all, {})
@@ -116,20 +97,18 @@ return {
 			ensure_installed = {
 				"biome",
 				"lua_ls",
-				"vtsls",
+				"tsc",
 				"gopls",
 				"bashls",
 				"jsonls",
 				"yamlls",
-				"pyright",
+				"basedpyright",
 				"html",
 				"cssls",
-				"elixirls",
-				"sqlls",
-				"nil_ls",
+				"expert",
 			},
-			-- mason-lspconfig v2: auto-calls vim.lsp.enable() for installed servers
-			automatic_enable = true,
+			automatic_enable = false,
 		})
+		vim.lsp.enable(vim.list_extend(require("mason-lspconfig").get_installed_servers(), { "nixd" }))
 	end,
 }

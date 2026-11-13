@@ -7,9 +7,14 @@ return {
 		"DiffviewFocusFiles",
 		"DiffviewRefresh",
 		"DiffviewFileHistory",
+		"DiffviewLog",
+	},
+	keys = {
+		{ "<leader>gt", "<cmd>DiffviewFileHistory %<cr>", desc = "file history" },
 	},
 	opts = {
 		use_icons = false,
+		enhanced_diff_hl = true,
 		keymaps = {
 			view = {
 				{ "n", "q", "<Cmd>DiffviewClose<CR>", { desc = "Close Diffview" } },

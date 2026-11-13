@@ -1,0 +1,8 @@
+{
+  "kind": "captured public model/list catalog, minimized",
+  "version": "0.166.0",
+  "captured": "2026-11-04",
+  "originalPublicSha256": "f1ce99f980d32507627fbe19080f68391cbb1cee21ef9a87ea1ad0bd8ed739e4",
+  "originalPhysicalLine": 3,
+  "fields": "data[].model and supportedReasoningEfforts[].reasoningEffort only; advertised capability, no entitlement/tool-mode/execution claim"
+}

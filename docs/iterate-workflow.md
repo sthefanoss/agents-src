@@ -1,12 +1,17 @@
 # The iterate workflow
 
 Iterate supervises one accepted card from To Do to Done. Give the `iterate` skill
-an explicit card ID in the project's directory:
+a card ID in the project's directory:
 
 ```text
 Use the iterate skill on DOT-123.
 /iterate DOT-123 --build-agent claude:sonnet:high
 ```
+
+Without a card ID, the skill proposes the card the priority doc makes next and says
+what blocks it if it is blocked. With no priority doc, or none of its sequence left,
+it ranks the ready To Do cards by milestone, then priority, then due date. No stage
+runs until you confirm the card.
 
 Stage selectors let one invocation choose independent agents for shape, debug,
 verify, build, and review. Their form is
@@ -16,7 +21,7 @@ defaults.
 
 The supervising agent runs one stage at a time, reads its result, checks new
 consequential claims, and carries the card into the next stage. Each ordinary
-stage call starts a fresh Claude session with that stage's skill. The card and its
+stage call starts a fresh agent session, Claude unless a selector names Codex, with that stage's skill. The card and its
 linked records carry execution details between sessions. Agents also read the
 priority doc (`backlog/docs/doc-0 - 00-Priority.md`) for the project goal, current
 focus, and agreed milestone and card sequence. They mark finished cards Done there and
@@ -93,20 +98,19 @@ the ID shows the most recently opened run. Card IDs are case-insensitive.
 ![The supervisor reads each result, continues after progress or an answered question, and ends the run on repeated stalls, refusals or a stop file.](iterate-stops.svg)
 
 Inbox, unknown columns and cards labeled `deferred` are refused. Build or Review
-assigned to someone other than `@claude` is also refused. An iterate invocation
+held by an assignee other than the run's own `@iterate-RUN` claim is also refused. An iterate invocation
 authorizes work on the named card under the existing scope and admission rules.
 
 ## Agent, output and limits
 
-Every stage currently uses the `claude` executable. Explicit model and effort
-values pass through to Claude. With no selector for a stage, the Claude CLI's
-configured defaults apply. The provider field preserves the provider interface,
-but another provider is rejected when its selected stage is reached until its
-adapter exists. Selection comes from invocation arguments.
+A stage runs Claude or Codex through its vendor SDK, with the CLI that SDK
+bundles. Explicit model and effort values pass through to the selected CLI. With
+no selector for a stage, that CLI's configured defaults apply. Selection comes
+from invocation arguments.
 
 Stage replies go to stdout. Stderr carries live progress, tool calls, errors and
 paths to retained evidence. `ITERATE_LIVE=0` suppresses live text and tool output;
-the final reply and raw Claude logs remain. The supervisor reads both streams
+the final reply and raw logs remain. The supervisor reads both streams
 and checks the consequential claims reported by the stage.
 
 Each run allows six stage attempts, including failures, across separate `step`
@@ -127,8 +131,8 @@ one-second grace period.
 
 ## Interrupted or unfinished work
 
-A dirty tree normally refuses a run. For a card assigned to `@claude`, the runner
-allows continuation and tells the stage to inspect the changes, finish and commit
+A dirty tree normally refuses a run. For a card held by the run's own
+`@iterate-RUN` claim, the runner allows continuation and tells the stage to inspect the changes, finish and commit
 that card's work, and preserve other changes. This assignee convention is the
 runner's ownership check; it does not prove which session wrote each file. Done
 requires a clean tree with no ownership exception. An untracked `.iterate-stop`
@@ -149,12 +153,15 @@ Deleting the journal deletes its enforcement history.
 
 Chezmoi installs `dot_agents/workflows/iterate/` to
 `~/.agents/workflows/iterate/` and `dot_scripts/executable_iterate` to
-`~/.scripts/iterate`. The launcher reconciles pinned Bun dependencies before
-running `src/main.ts`. Stage skills install under `~/.agents/skills/`.
+`~/.scripts/iterate`. The launcher reconciles pinned Bun dependencies and loads
+the environment a mise-hooked shell would have in the calling directory before
+running `src/main.ts`, so a stage uses the account that directory's mise config
+names, and it refuses a directory whose mise config is untrusted. Stage skills install under `~/.agents/skills/`.
 
-Run `bun run check` in the workflow source directory for runner and Claude stream
-tests, type checks and lint. These tests use fake Claude and backlog executables
-to exercise the runner. They do not establish task quality with real agents.
+Run `bun run check` in the workflow source directory for runner and adapter
+tests, type checks and lint. These tests use fake Claude, Codex and backlog
+executables to exercise the runner, and run the bundled CLIs only to read their
+versions. They do not establish task quality with real agents.
 The [workflow README](../dot_agents/workflows/iterate/README.md) describes the
 implementation and retained experiment harness. The [session diagram](iterate-session.svg)
 shows how one Claude process runs and reports its result.

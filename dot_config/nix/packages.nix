@@ -1,10 +1,10 @@
 { pkgs, ... }:
 {
   environment.systemPackages = [
-    pkgs.agent-browser
     pkgs.aspell
     pkgs.ast-grep
     pkgs.bat
+    pkgs.betterleaks
     pkgs.btop
     pkgs.chezmoi
     pkgs.curl
@@ -28,6 +28,7 @@
     pkgs.mise
     pkgs.mole-cleaner
     pkgs.neovim
+    pkgs.nixd
     pkgs.nixfmt
     pkgs.pinentry_mac
     pkgs.rclone

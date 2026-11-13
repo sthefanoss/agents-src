@@ -153,7 +153,7 @@ describe("a citation carrying a heading", () => {
   test("resolves when the target holds it as a markdown heading", async () => {
     const root = await corpus({
       "rulebook/coupling.md": "# Coupling\n\n## Temporal coupling\n",
-      "AGENTS.md": "See `coupling.md` §Temporal coupling for the probe.\n",
+      "AGENTS.md": "See `coupling.md` §Temporal coupling.\n",
     });
 
     expect(await findBrokenReferences(root)).toEqual([]);
@@ -215,6 +215,24 @@ describe("a citation carrying a heading", () => {
     const root = await corpus({
       "rulebook/coupling.md": "# Coupling\n\n## Temporal coupling\n",
       "AGENTS.md": "The probe lives in `coupling.md`\n§Temporal coupling.\n",
+    });
+
+    expect(await findBrokenReferences(root)).toEqual([]);
+  });
+
+  test("resolves a heading that wraps mid-name onto an indented line", async () => {
+    const root = await corpus({
+      "rulebook/coupling.md": "# Coupling\n\n## Temporal coupling\n",
+      "AGENTS.md": "- The probe lives in (`coupling.md` §Temporal\n  coupling).\n",
+    });
+
+    expect(await findBrokenReferences(root)).toEqual([]);
+  });
+
+  test("resolves a heading that wraps mid-name after a line ending in spaces", async () => {
+    const root = await corpus({
+      "rulebook/coupling.md": "# Coupling\n\n## Temporal coupling\n",
+      "AGENTS.md": "The probe lives in (`coupling.md` §Temporal  \ncoupling).\n",
     });
 
     expect(await findBrokenReferences(root)).toEqual([]);

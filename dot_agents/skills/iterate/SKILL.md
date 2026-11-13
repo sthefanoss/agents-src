@@ -1,30 +1,48 @@
 ---
 name: iterate
 disable-model-invocation: true
-argument-hint: "<card> [--<stage>-agent provider:model[:effort] ...]"
-description: Supervises one accepted card through its required stages in fresh sessions, reading each result before continuing. Runs only on direction with a card ID. Planning and reflection run separately.
+argument-hint: "[card] [--default-provider provider] [--<stage>-model model] [--<stage>-effort effort] [--role-model role=model] ..."
+description: Supervises one accepted card through its required stages in fresh sessions, reading each result before continuing. Runs only on direction. Planning and reflection run separately.
 ---
 
 # Iterate
 
 You carry the named card to Done on the board in the current directory, one session at a time,
 and you answer between sessions what a stage left open, so the iteration reaches
-its end within the card's accepted scope. If the invocation has no card ID, ask for
-one. Intake, selecting work, writing a bet, and reflection are outside this run.
+its end within the card's accepted scope. If the invocation has no card ID, find
+the card the board rules under Selecting work make next, propose it with the reason
+it is next, and end the turn on the question whether to iterate on it. Count a
+card as blocked when its notes hold it until another card runs or an event
+happens, and never for an approval a criterion needs during the run. Where the
+next card is blocked, name what blocks it and the card you would run instead,
+since skipping it needs approval. Where the priority doc is missing or its card
+sequence has nothing left to run, propose the To Do or Shape card that passes
+those rules' checks. Take the earliest open milestone first, then the highest
+priority, then the earliest due date, and say the priority doc gave no pick. Where
+no card qualifies, say what you found and end the turn. Start the run only on a card a
+typed reply confirms, because that reply is the direction to run it. Intake,
+writing a bet, and reflection are outside this run.
 The `iterate` script starts the sessions and holds the guards, so use it for each
 stage. The stage skills own their work and required reviews.
 
-Pass every `--<stage>-agent provider:model[:effort]` option from the invocation
-unchanged to each `step` or `resume`. The runner applies only the option for the
-stage it is about to run. A stage with no option uses the Claude CLI defaults.
-The supported stage names are shape, debug, verify, build, and review.
-Unqualified `--provider`, `--model`, and `--effort` belong to one direct runner
-call and cannot be mixed with stage options.
+Forward the complete chosen default, stage and role selector set unchanged to every
+`step` or `resume`. Supply `--default-provider` for this host unless the typed
+invocation explicitly selected another provider. Identify the host from its native
+session surface, never from unrelated environment variables. If the host cannot be
+identified, require an explicit provider before dispatch. The runner's help defines
+the supported selectors and their precedence. Unqualified `--provider`, `--model`
+and `--effort` select one direct runner call and cannot be mixed with supervised
+selectors.
 
-Rename this session to the card
-id, so the session list says which card is running rather than which skill started
-it. Then call `iterate step <card>` until it says the card is Done, overseeing
-between the calls. Call each step separately so you can read its result before
+A newly authorized selection needs a fresh `step` with an explicit default provider
+and the complete replacement request.
+Record the steering on the card. Reselection preserves the run, claim and limits,
+and never settles an interrupted attempt. Resume only a compatible author session.
+
+Before the first step, rename this session to the card ID through a tool or command
+you hold, so the session list identifies the card. Where you hold none, leave the
+name as it is and go on. Call `iterate step <card>` until it says the card is Done,
+overseeing between the calls. Call each step separately so you can read its result before
 starting another. After a stage reaches Done, call step once more to check the tree
 and close the run without starting a session.
 
@@ -77,4 +95,5 @@ The last step refuses to return while anything it wrote is uncommitted, so commi
 what it left rather than reporting the iteration complete over it.
 
 Your reply is the brief. It says what happened to the card, each decision the
-iteration made on its own, and what remains unresolved. The records hold the rest.
+iteration made on its own, and what remains unresolved. Where the session was not
+renamed, it says so and why. The records hold the rest.

@@ -1,94 +1,72 @@
 import { describe, expect, test } from "bun:test";
-import { commandFor, eventsFrom } from "./provider.ts";
+import { createHash } from "node:crypto";
+import process from "node:process";
+import { claudeEvents, claudeQuery } from "./claude.ts";
+import { adapterFor, adapters, budgetFor } from "./provider.ts";
+import { InvalidProviderMessage } from "./provider-types.ts";
 
-describe(commandFor.name, () => {
-  test("uses the Claude CLI default while keeping values as separate arguments", () => {
-    const command = commandFor({
-      agent: { provider: "claude" },
-      stage: "shape",
-      card: "cards/a 'quoted'.md",
-      systemPrompt: "Use $rules; `literal`",
-      budget: "12.50",
-    });
+const eventsFrom = (line: string) => claudeEvents(JSON.parse(line));
 
-    expect(command).toEqual({
-      argv: [
-        "claude",
-        "--print",
-        "--verbose",
-        "--output-format",
-        "stream-json",
-        "--max-budget-usd",
-        "12.50",
-        "--append-system-prompt",
-        "Use $rules; `literal`",
-        "--permission-mode",
-        "auto",
-        "/shape cards/a 'quoted'.md",
-      ],
-      permissionMode: "auto",
-    });
-    expect(command.argv).not.toContain("--model");
-    expect(command.argv).not.toContain("--effort");
-  });
-
-  test("starts the session in the auto permission mode it reports", () => {
-    const command = commandFor({
-      agent: { provider: "claude" },
-      stage: "build",
-      card: "card",
-      systemPrompt: "rules",
-      budget: "50",
-    });
-
-    expect(command.permissionMode).toBe("auto");
-    expect(command.argv[command.argv.indexOf("--permission-mode") + 1]).toBe("auto");
-    expect(command.argv).not.toContain("--dangerously-skip-permissions");
-  });
-
-  test("passes an explicit model and effort to Claude", () => {
-    const argv = commandFor({
-      agent: { provider: "claude", model: "sonnet", effort: "high" },
-      stage: "shape",
-      card: "card",
-      systemPrompt: "rules",
-      budget: "50",
-    }).argv;
-
-    expect(argv[argv.indexOf("--model") + 1]).toBe("sonnet");
-    expect(argv[argv.indexOf("--effort") + 1]).toBe("high");
-  });
-
-  test("resumes the recorded Claude session", () => {
-    expect(
-      commandFor({
+describe(claudeQuery.name, () => {
+  test("starts the stage skill under the Claude Code prompt with the runner's rules appended", () => {
+    const { prompt, options } = claudeQuery(
+      {
         agent: { provider: "claude" },
+        stage: "shape",
+        card: "cards/a 'quoted'.md",
+        systemPrompt: "Use $rules; `literal`",
+        budget: "12.50",
+      },
+      "/bin/claude",
+    );
+
+    expect(prompt).toBe("/shape cards/a 'quoted'.md");
+    expect(options).toMatchObject({
+      pathToClaudeCodeExecutable: "/bin/claude",
+      cwd: process.cwd(),
+      permissionMode: "auto",
+      settingSources: ["user", "project", "local"],
+      systemPrompt: { type: "preset", preset: "claude_code", append: "Use $rules; `literal`" },
+      maxBudgetUsd: 12.5,
+    });
+    expect(options).not.toHaveProperty("model");
+    expect(options).not.toHaveProperty("effort");
+    expect(options).not.toHaveProperty("resume");
+  });
+
+  test("passes an explicit model, effort, and recorded session to Claude", () => {
+    const { prompt, options } = claudeQuery(
+      {
+        agent: { provider: "claude", model: "sonnet", effort: "high" },
         stage: "build",
-        card: "card",
+        card: "",
         systemPrompt: "rules",
-        budget: "50",
         resumeSessionId: "session-1",
-      }).argv,
-    ).toEqual([
-      "claude",
-      "--print",
-      "--verbose",
-      "--output-format",
-      "stream-json",
-      "--max-budget-usd",
-      "50",
-      "--append-system-prompt",
-      "rules",
-      "--resume",
-      "session-1",
-      "--permission-mode",
-      "auto",
-      "/build card",
-    ]);
+      },
+      "/bin/claude",
+    );
+
+    expect(prompt).toBe("/build");
+    expect(options).toMatchObject({ model: "sonnet", effort: "high", resume: "session-1" });
+    expect(options).not.toHaveProperty("maxBudgetUsd");
+  });
+
+  test("refuses an effort Claude does not offer", () => {
+    expect(() =>
+      claudeQuery(
+        {
+          agent: { provider: "claude", effort: "ultra" },
+          stage: "build",
+          card: "",
+          systemPrompt: "rules",
+        },
+        "/bin/claude",
+      ),
+    ).toThrow("Claude does not offer effort ultra");
   });
 });
 
-describe(eventsFrom.name, () => {
+describe(claudeEvents.name, () => {
   test("normalizes a Claude session with text, tool activity, and a completed result", () => {
     const records = [
       {
@@ -148,9 +126,14 @@ describe(eventsFrom.name, () => {
       { type: "result", result: "Checks passed." },
       {
         type: "usage",
+        receiptId: createHash("sha256").update(JSON.stringify(records[2])).digest("hex"),
         turns: 3,
-        cost: { usd: 0.42, scope: "aggregateIncludingChildren" },
+        cost: { usd: 0.42, scope: "aggregateIncludingChildren", basis: "sessionCumulative" },
         usage: {
+          parentBasis: "invocation",
+          aggregateBasis: "sessionCumulative",
+          modelsBasis: "sessionCumulative",
+          raw: [records[2]],
           parent: { input: 7, cacheWrite: 11, cacheRead: 13, output: 17, reasoning: 5 },
           aggregateIncludingChildren: {
             input: 19,
@@ -268,16 +251,71 @@ describe(eventsFrom.name, () => {
     },
   );
 
-  test("ignores diagnostics and unknown event types", () => {
-    expect(eventsFrom("loading configuration...")).toEqual([]);
+  test("ignores unknown message types", () => {
     expect(eventsFrom('{"type":"future.event","payload":{"anything":42}}')).toEqual([]);
   });
 
   test.each([
     '{"type":"result","is_error":"false"}',
     '{"type":"assistant","message":{"content":[{"type":"text","text":42}]}}',
-    '{"type":',
+    '{"subtype":"init"}',
   ])("rejects malformed Claude records: %s", (line) => {
-    expect(() => eventsFrom(line)).toThrow(new Error("invalid Claude stream event"));
+    expect(() => eventsFrom(line)).toThrow(InvalidProviderMessage);
+  });
+});
+
+describe(adapterFor.name, () => {
+  test("declares the implemented protocols and Claude transport capabilities", () => {
+    expect(adapters.map((adapter) => adapter.provider)).toEqual(["claude", "codex"]);
+    expect(adapterFor("claude").capabilities).toEqual({
+      resume: true,
+      model: true,
+      efforts: ["low", "medium", "high", "xhigh", "max"],
+      dollarCap: true,
+      dollarCapBasis: "invocation",
+      defaultDollarCap: 50,
+    });
+  });
+
+  test("refuses an unavailable protocol without choosing another provider", () => {
+    expect(() => adapterFor("unavailable")).toThrow("unavailable is not implemented");
+  });
+});
+
+describe("budgetFor", () => {
+  const unsupported = { ...adapterFor("claude").capabilities, dollarCap: false };
+
+  test("a provider that cannot cap dollars receives no default cap", () => {
+    expect(budgetFor({ provider: "codex", capabilities: unsupported })).toBeUndefined();
+  });
+
+  test.each([{ explicitSession: "1" }, { runRemaining: 2 }])(
+    "unsupported dollar caps refuse before launch for %j",
+    (limits) => {
+      expect(() =>
+        budgetFor({ provider: "codex", capabilities: unsupported, ...limits }),
+      ).toThrow();
+    },
+  );
+
+  test("the demonstrated Claude cap is invocation spend bounded by remaining run headroom", () => {
+    expect(
+      budgetFor({
+        provider: "claude",
+        capabilities: adapterFor("claude").capabilities,
+        explicitSession: "0.12",
+        runRemaining: 0.09,
+      }),
+    ).toBe("0.09");
+  });
+
+  test("an unestablished provider cap basis refuses rather than assuming cumulative semantics", () => {
+    expect(() =>
+      budgetFor({
+        provider: "codex",
+        capabilities: { ...unsupported, dollarCap: true, dollarCapBasis: "sessionCumulative" },
+        explicitSession: "1",
+      }),
+    ).toThrow();
   });
 });
